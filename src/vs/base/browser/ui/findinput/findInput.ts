@@ -191,7 +191,7 @@ export class FindInput extends Widget {
 
 		this.controls = document.createElement('div');
 		this.controls.className = 'controls';
-		this.controls.style.display = this.showCommonFindToggles ? 'block' : 'none';
+		this.controls.style.display = this.showCommonFindToggles ? '' : 'none';
 		if (this.caseSensitive) {
 			this.controls.append(this.caseSensitive.domNode);
 		}
@@ -232,6 +232,11 @@ export class FindInput extends Widget {
 		return this.inputBox.onDidChange;
 	}
 
+	public layout(style: { collapsedFindWidget: boolean; narrowFindWidget: boolean; reducedFindWidget: boolean }) {
+		this.inputBox.layout();
+		this.updateInputBoxPadding(style.collapsedFindWidget);
+	}
+
 	public enable(): void {
 		this.domNode.classList.remove('disabled');
 		this.inputBox.enable();
@@ -269,11 +274,6 @@ export class FindInput extends Widget {
 	}
 
 	public setAdditionalToggles(toggles: Toggle[] | undefined): void {
-		// Short circuit if there are no toggles to update
-		if (!this.additionalToggles.length && !toggles?.length) {
-			return;
-		}
-
 		for (const currentToggle of this.additionalToggles) {
 			currentToggle.domNode.remove();
 		}
@@ -296,12 +296,20 @@ export class FindInput extends Widget {
 		}
 
 		if (this.additionalToggles.length > 0) {
-			this.controls.style.display = 'block';
+			this.controls.style.display = '';
 		}
 
-		this.inputBox.paddingRight =
-			((this.caseSensitive?.width() ?? 0) + (this.wholeWords?.width() ?? 0) + (this.regex?.width() ?? 0))
-			+ this.additionalToggles.reduce((r, t) => r + t.width(), 0);
+		this.updateInputBoxPadding();
+	}
+
+	private updateInputBoxPadding(controlsHidden = false) {
+		if (controlsHidden) {
+			this.inputBox.paddingRight = 0;
+		} else {
+			this.inputBox.paddingRight =
+				((this.caseSensitive?.width() ?? 0) + (this.wholeWords?.width() ?? 0) + (this.regex?.width() ?? 0))
+				+ this.additionalToggles.reduce((r, t) => r + t.width(), 0);
+		}
 	}
 
 	public clear(): void {

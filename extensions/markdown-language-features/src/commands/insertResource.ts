@@ -6,10 +6,9 @@
 import * as vscode from 'vscode';
 import { Utils } from 'vscode-uri';
 import { Command } from '../commandManager';
-import { createUriListSnippet, getParentDocumentUri, imageFileExtensions } from '../languageFeatures/dropIntoEditor';
+import { createUriListSnippet, getParentDocumentUri, imageFileExtensions } from '../languageFeatures/copyFiles/dropIntoEditor';
 import { coalesce } from '../util/arrays';
 import { Schemes } from '../util/schemes';
-
 
 
 export class InsertLinkFromWorkspace implements Command {
@@ -86,7 +85,7 @@ function createInsertLinkEdit(activeEditor: vscode.TextEditor, selectedFiles: vs
 			separator: insertAsImage ? '\n' : ' ',
 		});
 
-		return snippet ? new vscode.SnippetTextEdit(selection, snippet) : undefined;
+		return snippet ? new vscode.SnippetTextEdit(selection, snippet.snippet) : undefined;
 	}));
 
 	const edit = new vscode.WorkspaceEdit();

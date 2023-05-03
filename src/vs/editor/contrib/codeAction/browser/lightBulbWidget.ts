@@ -8,12 +8,15 @@ import { Gesture } from 'vs/base/browser/touch';
 import { Codicon } from 'vs/base/common/codicons';
 import { Emitter, Event } from 'vs/base/common/event';
 import { Disposable } from 'vs/base/common/lifecycle';
+import { ThemeIcon } from 'vs/base/common/themables';
 import { withNullAsUndefined } from 'vs/base/common/types';
 import 'vs/css!./lightBulbWidget';
 import { ContentWidgetPositionPreference, ICodeEditor, IContentWidget, IContentWidgetPosition } from 'vs/editor/browser/editorBrowser';
 import { EditorOption } from 'vs/editor/common/config/editorOptions';
 import { IPosition } from 'vs/editor/common/core/position';
+import { IEditorContribution } from 'vs/editor/common/editorCommon';
 import { computeIndentLevel } from 'vs/editor/common/model/utils';
+import { autoFixCommandId, quickFixCommandId } from 'vs/editor/contrib/codeAction/browser/codeAction';
 import type { CodeActionSet, CodeActionTrigger } from 'vs/editor/contrib/codeAction/common/types';
 import * as nls from 'vs/nls';
 import { IKeybindingService } from 'vs/platform/keybinding/common/keybinding';
@@ -41,8 +44,9 @@ namespace LightBulbState {
 	export type State = typeof Hidden | Showing;
 }
 
+export class LightBulbWidget extends Disposable implements IEditorContribution, IContentWidget {
 
-export class LightBulbWidget extends Disposable implements IContentWidget {
+	public static readonly ID = 'editor.contrib.lightbulbWidget';
 
 	private static readonly _posPref = [ContentWidgetPositionPreference.EXACT];
 
@@ -58,8 +62,6 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 
 	constructor(
 		private readonly _editor: ICodeEditor,
-		quickFixActionId: string,
-		preferredFixActionId: string,
 		@IKeybindingService keybindingService: IKeybindingService
 	) {
 		super();
@@ -121,8 +123,8 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		}));
 
 		this._register(Event.runAndSubscribe(keybindingService.onDidUpdateKeybindings, () => {
-			this._preferredKbLabel = withNullAsUndefined(keybindingService.lookupKeybinding(preferredFixActionId)?.getLabel());
-			this._quickFixKbLabel = withNullAsUndefined(keybindingService.lookupKeybinding(quickFixActionId)?.getLabel());
+			this._preferredKbLabel = withNullAsUndefined(keybindingService.lookupKeybinding(autoFixCommandId)?.getLabel());
+			this._quickFixKbLabel = withNullAsUndefined(keybindingService.lookupKeybinding(quickFixCommandId)?.getLabel());
 
 			this._updateLightBulbTitleAndIcon();
 		}));
@@ -210,8 +212,8 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 	private _updateLightBulbTitleAndIcon(): void {
 		if (this.state.type === LightBulbState.Type.Showing && this.state.actions.hasAutoFix) {
 			// update icon
-			this._domNode.classList.remove(...Codicon.lightBulb.classNamesArray);
-			this._domNode.classList.add(...Codicon.lightbulbAutofix.classNamesArray);
+			this._domNode.classList.remove(...ThemeIcon.asClassNameArray(Codicon.lightBulb));
+			this._domNode.classList.add(...ThemeIcon.asClassNameArray(Codicon.lightbulbAutofix));
 
 			if (this._preferredKbLabel) {
 				this.title = nls.localize('preferredcodeActionWithKb', "Show Code Actions. Preferred Quick Fix Available ({0})", this._preferredKbLabel);
@@ -220,8 +222,8 @@ export class LightBulbWidget extends Disposable implements IContentWidget {
 		}
 
 		// update icon
-		this._domNode.classList.remove(...Codicon.lightbulbAutofix.classNamesArray);
-		this._domNode.classList.add(...Codicon.lightBulb.classNamesArray);
+		this._domNode.classList.remove(...ThemeIcon.asClassNameArray(Codicon.lightbulbAutofix));
+		this._domNode.classList.add(...ThemeIcon.asClassNameArray(Codicon.lightBulb));
 
 		if (this._quickFixKbLabel) {
 			this.title = nls.localize('codeActionWithKb', "Show Code Actions ({0})", this._quickFixKbLabel);

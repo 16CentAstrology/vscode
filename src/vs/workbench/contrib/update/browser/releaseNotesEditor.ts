@@ -8,7 +8,6 @@ import { CancellationToken } from 'vs/base/common/cancellation';
 import { onUnexpectedError } from 'vs/base/common/errors';
 import { escapeMarkdownSyntaxTokens } from 'vs/base/common/htmlContent';
 import { KeybindingParser } from 'vs/base/common/keybindingParser';
-import { OS } from 'vs/base/common/platform';
 import { escape } from 'vs/base/common/strings';
 import { URI } from 'vs/base/common/uri';
 import { generateUuid } from 'vs/base/common/uuid';
@@ -59,7 +58,7 @@ export class ReleaseNotesManager {
 			}
 			const html = await this.renderBody(this._lastText);
 			if (this._currentReleaseNotes) {
-				this._currentReleaseNotes.webview.html = html;
+				this._currentReleaseNotes.webview.setHtml(html);
 			}
 		});
 
@@ -76,14 +75,16 @@ export class ReleaseNotesManager {
 		const activeEditorPane = this._editorService.activeEditorPane;
 		if (this._currentReleaseNotes) {
 			this._currentReleaseNotes.setName(title);
-			this._currentReleaseNotes.webview.html = html;
+			this._currentReleaseNotes.webview.setHtml(html);
 			this._webviewWorkbenchService.revealWebview(this._currentReleaseNotes, activeEditorPane ? activeEditorPane.group : this._editorGroupService.activeGroup, false);
 		} else {
 			this._currentReleaseNotes = this._webviewWorkbenchService.openWebview(
 				{
+					title,
 					options: {
 						tryRestoreScrollPosition: true,
 						enableFindWidget: true,
+						disableServiceWorker: true,
 					},
 					contentOptions: {
 						localResourceRoots: [],
@@ -109,7 +110,7 @@ export class ReleaseNotesManager {
 				this._currentReleaseNotes = undefined;
 			}));
 
-			this._currentReleaseNotes.webview.html = html;
+			this._currentReleaseNotes.webview.setHtml(html);
 		}
 
 		return true;
@@ -142,7 +143,7 @@ export class ReleaseNotesManager {
 			};
 
 			const kbstyle = (match: string, kb: string) => {
-				const keybinding = KeybindingParser.parseKeybinding(kb, OS);
+				const keybinding = KeybindingParser.parseKeybinding(kb);
 
 				if (!keybinding) {
 					return unassigned;
@@ -223,7 +224,7 @@ export class ReleaseNotesManager {
 		const content = await renderMarkdownDocument(text, this._extensionService, this._languageService, false);
 		const colorMap = TokenizationRegistry.getColorMap();
 		const css = colorMap ? generateTokensCSSForColorMap(colorMap) : '';
-		const showReleaseNotes = this._configurationService.getValue<boolean>('update.showReleaseNotes');
+		const showReleaseNotes = Boolean(this._configurationService.getValue<boolean>('update.showReleaseNotes'));
 
 		return `<!DOCTYPE html>
 		<html>
@@ -238,23 +239,41 @@ export class ReleaseNotesManager {
 				</style>
 			</head>
 			<body>
-				<header>
-					<input type="checkbox" id="showReleaseNotes" ${showReleaseNotes ? 'checked' : ''}>
-					<label for="showReleaseNotes">${nls.localize('showOnUpdate', "Show release notes after an update")}</label>
-				</header>
 				${content}
 				<script nonce="${nonce}">
 					const vscode = acquireVsCodeApi();
-					const checkbox = document.getElementById('showReleaseNotes');
+					const container = document.createElement('p');
+					container.style.display = 'flex';
+					container.style.alignItems = 'center';
+
+					const input = document.createElement('input');
+					input.type = 'checkbox';
+					input.id = 'showReleaseNotes';
+					input.checked = ${showReleaseNotes};
+					container.appendChild(input);
+
+					const label = document.createElement('label');
+					label.htmlFor = 'showReleaseNotes';
+					label.textContent = '${nls.localize('showOnUpdate', "Show release notes after an update")}';
+					container.appendChild(label);
+
+					const beforeElement = document.querySelector("body > h1")?.nextElementSibling;
+					console.log(beforeElement);
+
+					if (beforeElement) {
+						document.body.insertBefore(container, beforeElement);
+					} else {
+						document.body.appendChild(container);
+					}
 
 					window.addEventListener('message', event => {
 						if (event.data.type === 'showReleaseNotes') {
-							checkbox.checked = event.data.value;
+							input.checked = event.data.value;
 						}
 					});
 
-					checkbox.addEventListener('change', event => {
-						vscode.postMessage({ type: 'showReleaseNotes', value: checkbox.checked }, '*');
+					input.addEventListener('change', event => {
+						vscode.postMessage({ type: 'showReleaseNotes', value: input.checked }, '*');
 					});
 				</script>
 			</body>
