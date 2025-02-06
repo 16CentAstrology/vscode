@@ -26,6 +26,14 @@
 	display: none;
 }
 
+.markers-panel  .markers-panel-container .codicon.codicon-light-bulb {
+	color:  var(--vscode-editorLightBulb-foreground);
+}
+
+.markers-panel  .markers-panel-container .codicon.codicon-lightbulb-autofix {
+	color:  var(--vscode-editorLightBulbAutoFix-foreground);
+}
+
 .markers-panel .markers-panel-container .tree-container.hidden {
 	display: none;
 	visibility: hidden;
@@ -67,7 +75,7 @@
 .markers-panel .markers-panel-container .tree-container .monaco-tl-contents .marker-message-details-container > .marker-message-line > .marker-message {
 	overflow: hidden;
 	text-overflow: ellipsis;
-	white-space: nowrap;
+	white-space: pre;
 }
 
 .markers-panel .markers-panel-container .tree-container .monaco-tl-contents .marker-message-details-container > .marker-message-line.details-container {
