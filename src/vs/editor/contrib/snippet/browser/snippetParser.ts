@@ -3,7 +3,7 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { CharCode } from 'vs/base/common/charCode';
+import { CharCode } from '../../../../base/common/charCode.js';
 
 export const enum TokenType {
 	Dollar,
@@ -300,7 +300,7 @@ export class Choice extends Marker {
 
 	toTextmateString(): string {
 		return this.options
-			.map(option => option.value.replace(/\||,/g, '\\$&'))
+			.map(option => option.value.replace(/\||,|\\/g, '\\$&'))
 			.join(',');
 	}
 
