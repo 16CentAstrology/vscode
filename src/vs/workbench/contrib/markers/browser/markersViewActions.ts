@@ -3,18 +3,19 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as DOM from 'vs/base/browser/dom';
-import { Action, IAction } from 'vs/base/common/actions';
-import { IContextMenuService } from 'vs/platform/contextview/browser/contextView';
-import Messages from 'vs/workbench/contrib/markers/browser/messages';
-import { Disposable } from 'vs/base/common/lifecycle';
-import { Marker } from 'vs/workbench/contrib/markers/browser/markersModel';
-import { IContextKeyService } from 'vs/platform/contextkey/common/contextkey';
-import { Event, Emitter } from 'vs/base/common/event';
-import { Codicon } from 'vs/base/common/codicons';
-import { ActionViewItem } from 'vs/base/browser/ui/actionbar/actionViewItems';
-import { MarkersContextKeys } from 'vs/workbench/contrib/markers/common/markers';
-import 'vs/css!./markersViewActions';
+import * as DOM from '../../../../base/browser/dom.js';
+import { Action, IAction } from '../../../../base/common/actions.js';
+import { IContextMenuService } from '../../../../platform/contextview/browser/contextView.js';
+import Messages from './messages.js';
+import { Disposable } from '../../../../base/common/lifecycle.js';
+import { Marker } from './markersModel.js';
+import { IContextKeyService } from '../../../../platform/contextkey/common/contextkey.js';
+import { Event, Emitter } from '../../../../base/common/event.js';
+import { Codicon } from '../../../../base/common/codicons.js';
+import { ThemeIcon } from '../../../../base/common/themables.js';
+import { ActionViewItem, IActionViewItemOptions } from '../../../../base/browser/ui/actionbar/actionViewItems.js';
+import { MarkersContextKeys } from '../common/markers.js';
+import './markersViewActions.css';
 
 export interface IMarkersFiltersChangeEvent {
 	excludedFiles?: boolean;
@@ -58,7 +59,7 @@ export class MarkersFilters extends Disposable {
 	set excludedFiles(filesExclude: boolean) {
 		if (this._excludedFiles.get() !== filesExclude) {
 			this._excludedFiles.set(filesExclude);
-			this._onDidChange.fire(<IMarkersFiltersChangeEvent>{ excludedFiles: true });
+			this._onDidChange.fire({ excludedFiles: true });
 		}
 	}
 
@@ -69,7 +70,7 @@ export class MarkersFilters extends Disposable {
 	set activeFile(activeFile: boolean) {
 		if (this._activeFile.get() !== activeFile) {
 			this._activeFile.set(activeFile);
-			this._onDidChange.fire(<IMarkersFiltersChangeEvent>{ activeFile: true });
+			this._onDidChange.fire({ activeFile: true });
 		}
 	}
 
@@ -80,7 +81,7 @@ export class MarkersFilters extends Disposable {
 	set showWarnings(showWarnings: boolean) {
 		if (this._showWarnings.get() !== showWarnings) {
 			this._showWarnings.set(showWarnings);
-			this._onDidChange.fire(<IMarkersFiltersChangeEvent>{ showWarnings: true });
+			this._onDidChange.fire({ showWarnings: true });
 		}
 	}
 
@@ -91,7 +92,7 @@ export class MarkersFilters extends Disposable {
 	set showErrors(showErrors: boolean) {
 		if (this._showErrors.get() !== showErrors) {
 			this._showErrors.set(showErrors);
-			this._onDidChange.fire(<IMarkersFiltersChangeEvent>{ showErrors: true });
+			this._onDidChange.fire({ showErrors: true });
 		}
 	}
 
@@ -102,7 +103,7 @@ export class MarkersFilters extends Disposable {
 	set showInfos(showInfos: boolean) {
 		if (this._showInfos.get() !== showInfos) {
 			this._showInfos.set(showInfos);
-			this._onDidChange.fire(<IMarkersFiltersChangeEvent>{ showInfos: true });
+			this._onDidChange.fire({ showInfos: true });
 		}
 	}
 
@@ -111,7 +112,7 @@ export class MarkersFilters extends Disposable {
 export class QuickFixAction extends Action {
 
 	public static readonly ID: string = 'workbench.actions.problems.quickfix';
-	private static readonly CLASS: string = 'markers-panel-action-quickfix ' + Codicon.lightBulb.classNames;
+	private static readonly CLASS: string = 'markers-panel-action-quickfix ' + ThemeIcon.asClassName(Codicon.lightBulb);
 	private static readonly AUTO_FIX_CLASS: string = QuickFixAction.CLASS + ' autofixable';
 
 	private readonly _onShowQuickFixes = this._register(new Emitter<void>());
@@ -144,10 +145,12 @@ export class QuickFixAction extends Action {
 
 export class QuickFixActionViewItem extends ActionViewItem {
 
-	constructor(action: QuickFixAction,
+	constructor(
+		action: QuickFixAction,
+		options: IActionViewItemOptions,
 		@IContextMenuService private readonly contextMenuService: IContextMenuService,
 	) {
-		super(null, action, { icon: true, label: false });
+		super(null, action, { ...options, icon: true, label: false });
 	}
 
 	public override onClick(event: DOM.EventLike): void {

@@ -3,10 +3,12 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import * as assert from 'assert';
-import { Registry } from 'vs/platform/registry/common/platform';
-import { PaneCompositeDescriptor, Extensions, PaneCompositeRegistry, PaneComposite } from 'vs/workbench/browser/panecomposite';
-import { isFunction } from 'vs/base/common/types';
+import assert from 'assert';
+import { Registry } from '../../../platform/registry/common/platform.js';
+import { PaneCompositeDescriptor, Extensions, PaneCompositeRegistry, PaneComposite } from '../../browser/panecomposite.js';
+import { isFunction } from '../../../base/common/types.js';
+import { IBoundarySashes } from '../../../base/browser/ui/sash/sash.js';
+import { ensureNoDisposablesAreLeakedInTestSuite } from '../../../base/test/common/utils.js';
 
 suite('Viewlets', () => {
 
@@ -17,6 +19,10 @@ suite('Viewlets', () => {
 		}
 
 		override layout(dimension: any): void {
+			throw new Error('Method not implemented.');
+		}
+
+		override setBoundarySashes(sashes: IBoundarySashes): void {
 			throw new Error('Method not implemented.');
 		}
 
@@ -53,4 +59,6 @@ suite('Viewlets', () => {
 		assert(d === Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposite('reg-test-id'));
 		assert.strictEqual(oldCount + 1, Registry.as<PaneCompositeRegistry>(Extensions.Viewlets).getPaneComposites().length);
 	});
+
+	ensureNoDisposablesAreLeakedInTestSuite();
 });

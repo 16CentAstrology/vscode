@@ -10,8 +10,13 @@
   },
   "icon": "images/icon.png",
   "activationEvents": [
+    "onProfile",
+    "onProfile:github",
     "onLanguage:json",
     "onLanguage:jsonc"
+  ],
+  "enabledApiProposals": [
+    "profileContentHandlers"
   ],
   "main": "./out/configurationEditingMain",
   "browser": "./dist/browser/configurationEditingMain",
@@ -20,7 +25,9 @@
     "watch": "gulp watch-extension:configuration-editing"
   },
   "dependencies": {
-    "jsonc-parser": "^2.2.1"
+    "@octokit/rest": "^21.1.1",
+    "jsonc-parser": "^3.2.0",
+    "tunnel": "^0.0.6"
   },
   "capabilities": {
     "virtualWorkspaces": true,
@@ -36,8 +43,7 @@
           ".code-workspace",
           "language-configuration.json",
           "icon-theme.json",
-          "color-theme.json",
-          ".code-snippets"
+          "color-theme.json"
         ],
         "filenames": [
           "settings.json",
@@ -49,12 +55,9 @@
           "profiles.json",
           "devcontainer.json",
           ".devcontainer.json"
-        ],
-        "filenamePatterns": [
-          "**/User/snippets/*.json",
-          "**/User/profiles/*/snippets/*.json"
         ]
-      }, {
+      },
+      {
         "id": "json",
         "extensions": [
           ".code-profile"
@@ -140,11 +143,11 @@
       },
       {
         "fileMatch": "devcontainer.json",
-        "url": "./schemas/devContainer.schema.generated.json"
+        "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json"
       },
       {
         "fileMatch": ".devcontainer.json",
-        "url": "./schemas/devContainer.schema.generated.json"
+        "url": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.schema.json"
       },
       {
         "fileMatch": "%APP_SETTINGS_HOME%/globalStorage/ms-vscode-remote.remote-containers/nameConfigs/*.json",
@@ -161,7 +164,7 @@
     ]
   },
   "devDependencies": {
-    "@types/node": "16.x"
+    "@types/node": "20.x"
   },
   "repository": {
     "type": "git",
